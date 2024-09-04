@@ -82,14 +82,15 @@ const JsonEditorChat = () => {
     const prompt1 = 'You are a helpful assistant that can help with json configuration modification. You are given a json file and a question. You need to answer the question based to best of your ability. You need to return the modified json file. You need to return complete json without any other text or comment. existing configuration:' + inputJson + ' user question:' + question + ' make sure to return valid json make sure you append or modify to input. Make sure you are removing existing config if your request is to add new table Re-read the question and prompt to make sure you are following the instructions. '
     const prompt = "You are a helpful assistant that can help with json configuration modification. "+ 
     " You are given a input JSON config and a question. "+
-    " Make sure you are follwing json schema on the output generation: " + schema + 
     " Your task is to modify the JSON config based on the question."+
     " Return the modified JSON file as output. Return the complete JSON with-out any other text or comments."+ 
     " Here is the Existing configuration: and input json which need to be modified: " + inputJson + " and  User question: " + question + 
-    ". Ensure the returned JSON is valid and correctly reflects the user's request."
+    ". Ensure the returned JSON is valid and correctly reflects the user's request." +
     " If the request involves adding a new table, ensure the old configuration for that table is not removed" + 
-    " All unspecified values we will take from an existing table. Make sure none of them are empty."
-    " Re-read the question and prompt to ensure you are following the instructions. No hellucination. Return modified exsting configuration. Do not return schema in your output, please please Make sure response is readable using Json parse method"
+    " All unspecified values we will take from an existing table. Make sure none of them are empty." +
+    " Re-read the question and prompt to ensure you are following the instructions. No hellucination. Return modified exsting configuration." +
+    " Make sure you are following the schema and returning the correct JSON format" +
+    " please please Make sure response is readable using Json parse method"
 
     const payload = {
       model: "llama3.1",
@@ -136,7 +137,18 @@ const JsonEditorChat = () => {
       const aiResponse = { role: 'assistant', content: `response: added new table for ${modifiedJsonString}}` };
       setChatHistory([...chatHistory, aiResponse]);
     } else {
-      const aiResponse = { role: 'assistant', content: `${newConfigResponse}}` };
+      console.log(newConfigResponse)
+      //if it doest not starts with "{" and ends with "}" add it
+      if (!newConfigResponse.startsWith('{') && !newConfigResponse.endsWith('}')) {
+        const modifiedJson = '{' + newConfigResponse + '}';
+        console.log(modifiedJson)
+        setJson(JSON.parse(modifiedJson))
+      } else {
+        const modifiedJson = newConfigResponse;
+        console.log(modifiedJson)
+        setJson(JSON.parse(modifiedJson))
+      }
+      const aiResponse = { role: 'assistant', content: `response: added new table for ${newConfigResponse}}` };
       setChatHistory([...chatHistory, aiResponse]);
     }
     
